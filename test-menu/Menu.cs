@@ -7,15 +7,33 @@ namespace test_menu
     /// <summary>
     /// This is the main type for your game.
     /// </summary>
-    public class Game1 : Game
+    public class Menu : Game
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        public Game1()
+        // Menu textures
+        Texture2D buttonStart, buttonExit, buttonResume;
+
+        // Game state control
+        const int START_MENU = 0;
+        const int PLAYING = 1;
+        const int PAUSED = 2;
+        const int GAME_OVER = 3;
+
+        int State = START_MENU;
+
+        
+
+        public Menu()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
+
+            graphics.PreferredBackBufferWidth = 800;
+            graphics.PreferredBackBufferHeight = 600;
+
+            this.IsMouseVisible = true;
         }
 
         /// <summary>
@@ -26,8 +44,6 @@ namespace test_menu
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
             base.Initialize();
         }
 
@@ -40,7 +56,10 @@ namespace test_menu
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            // Load menu buttons
+            buttonStart = Content.Load<Texture2D>("menu/button_start");
+            buttonExit = Content.Load<Texture2D>("menu/button_exit");
+            buttonResume = Content.Load<Texture2D>("menu/button_resume");
         }
 
         /// <summary>
@@ -62,7 +81,7 @@ namespace test_menu
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
+            MouseState mouseState = Mouse.GetState();
 
             base.Update(gameTime);
         }
@@ -75,9 +94,28 @@ namespace test_menu
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
+            spriteBatch.Begin();
+            spriteBatch.Draw(buttonStart, HAlignedTxtRect(buttonStart, 170), Color.White);
+            spriteBatch.Draw(buttonExit, HAlignedTxtRect(buttonExit, 270), Color.White);
+            spriteBatch.Draw(buttonResume, HAlignedTxtRect(buttonResume, 370), Color.White);
+            spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void UpdateState()
+        {
+            
+        }
+
+        private Rectangle HAlignedTxtRect(Texture2D texture, int height)
+        {
+            return new Rectangle(
+                (GraphicsDevice.Viewport.Width - texture.Width) / 2,
+                height,
+                texture.Width,
+                texture.Height
+            );
         }
     }
 }

@@ -14,7 +14,7 @@ namespace test_menu
         [STAThread]
         static void Main()
         {
-            using (var game = new Game1())
+            using (var game = new Menu())
                 game.Run();
         }
     }
