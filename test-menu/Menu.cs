@@ -13,17 +13,15 @@ namespace test_menu
         SpriteBatch spriteBatch;
 
         // Menu textures
-        Texture2D buttonStart, buttonExit, buttonResume;
+        GameObject buttonStart, buttonExit, buttonResume, buttonOutline;
 
         // Game state control
-        const int START_MENU = 0;
-        const int PLAYING = 1;
-        const int PAUSED = 2;
-        const int GAME_OVER = 3;
+        const int STATE_MENU = 0;
+        const int STATE_PLAYING = 1;
+        const int STATE_PAUSED = 2;
+        const int STATE_GAMEOVER = 3;
+        int GameState = STATE_MENU;
 
-        int State = START_MENU;
-
-        
 
         public Menu()
         {
@@ -57,9 +55,15 @@ namespace test_menu
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // Load menu buttons
-            buttonStart = Content.Load<Texture2D>("menu/button_start");
-            buttonExit = Content.Load<Texture2D>("menu/button_exit");
-            buttonResume = Content.Load<Texture2D>("menu/button_resume");
+            Texture2D start = Content.Load<Texture2D>("menu/button_start");
+            Texture2D exit = Content.Load<Texture2D>("menu/button_exit");
+            Texture2D resume = Content.Load<Texture2D>("menu/button_resume");
+            Texture2D outline = Content.Load<Texture2D>("menu/button_outline");
+            buttonStart = new GameObject(start, HAlignedTextureRectangle(start, 170));
+            buttonExit = new GameObject(exit, HAlignedTextureRectangle(exit, 270));
+            buttonResume = new GameObject(resume, HAlignedTextureRectangle(resume, 370));
+            buttonOutline = new GameObject(outline, HAlignedTextureRectangle(outline, 0));
+            buttonOutline.Disable(spriteBatch);
         }
 
         /// <summary>
@@ -83,6 +87,20 @@ namespace test_menu
 
             MouseState mouseState = Mouse.GetState();
 
+            if (IntersectsButton(ref mouseState))
+                buttonOutline.Enable(spriteBatch);
+            else
+                buttonOutline.Disable(spriteBatch);
+
+            if (buttonStart.BoundingBox.Contains(mouseState.Position))
+                buttonOutline.Position.Y = 170;
+            if (buttonExit.BoundingBox.Contains(mouseState.Position))
+                buttonOutline.Position.Y = 270;
+            if (buttonResume.BoundingBox.Contains(mouseState.Position))
+                buttonOutline.Position.Y = 370;
+
+            UpdateState();
+
             base.Update(gameTime);
         }
 
@@ -95,12 +113,24 @@ namespace test_menu
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             spriteBatch.Begin();
-            spriteBatch.Draw(buttonStart, HAlignedTxtRect(buttonStart, 170), Color.White);
-            spriteBatch.Draw(buttonExit, HAlignedTxtRect(buttonExit, 270), Color.White);
-            spriteBatch.Draw(buttonResume, HAlignedTxtRect(buttonResume, 370), Color.White);
+            buttonStart.Draw(spriteBatch);
+            buttonExit.Draw(spriteBatch);
+            buttonResume.Draw(spriteBatch);
+            buttonOutline.Draw(spriteBatch);
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private bool IntersectsButton(ref MouseState mouseState)
+        {
+            if (GameState == STATE_MENU)
+            {
+                return buttonStart.BoundingBox.Contains(mouseState.Position) ||
+                   buttonExit.BoundingBox.Contains(mouseState.Position) ||
+                   buttonResume.BoundingBox.Contains(mouseState.Position);
+            }
+            return false;
         }
 
         private void UpdateState()
@@ -108,13 +138,11 @@ namespace test_menu
             
         }
 
-        private Rectangle HAlignedTxtRect(Texture2D texture, int height)
+        private Vector2 HAlignedTextureRectangle(Texture2D texture, int height)
         {
-            return new Rectangle(
+            return new Vector2(
                 (GraphicsDevice.Viewport.Width - texture.Width) / 2,
-                height,
-                texture.Width,
-                texture.Height
+                height
             );
         }
     }
