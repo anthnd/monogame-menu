@@ -87,7 +87,7 @@ namespace test_menu
 
             MouseState mouseState = Mouse.GetState();
 
-            if (IntersectsButton(ref mouseState))
+            if (ButtonIntersects(ref mouseState))
                 buttonOutline.Enable(spriteBatch);
             else
                 buttonOutline.Disable(spriteBatch);
@@ -99,7 +99,19 @@ namespace test_menu
             if (buttonResume.BoundingBox.Contains(mouseState.Position))
                 buttonOutline.Position.Y = 370;
 
-            UpdateState();
+            switch(GameState)
+            {
+                case STATE_MENU:
+                    break;
+                case STATE_PLAYING:
+                    break;
+                case STATE_PAUSED:
+                    break;
+                case STATE_GAMEOVER:
+                    break;
+                default:
+                    break;
+            }
 
             base.Update(gameTime);
         }
@@ -122,7 +134,7 @@ namespace test_menu
             base.Draw(gameTime);
         }
 
-        private bool IntersectsButton(ref MouseState mouseState)
+        private bool ButtonIntersects(ref MouseState mouseState)
         {
             if (GameState == STATE_MENU)
             {
@@ -135,7 +147,12 @@ namespace test_menu
 
         private void UpdateState()
         {
-            
+            switch(GameState) {
+		        case STATE_MENU:
+                    break;
+                default:
+                    break;
+	        }
         }
 
         private Vector2 HAlignedTextureRectangle(Texture2D texture, int height)
