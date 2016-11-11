@@ -61,8 +61,9 @@ namespace test_menu
             Texture2D outline = Content.Load<Texture2D>("menu/button_outline");
             buttonStart = new GameObject(start, HAlignedTextureRectangle(start, 170));
             buttonExit = new GameObject(exit, HAlignedTextureRectangle(exit, 270));
-            buttonResume = new GameObject(resume, HAlignedTextureRectangle(resume, 370));
+            buttonResume = new GameObject(resume, HAlignedTextureRectangle(resume, 170));
             buttonOutline = new GameObject(outline, HAlignedTextureRectangle(outline, 0));
+            buttonResume.Disable(spriteBatch);
             buttonOutline.Disable(spriteBatch);
         }
 
@@ -86,8 +87,9 @@ namespace test_menu
                 Exit();
 
             MouseState mouseState = Mouse.GetState();
+            KeyboardState keyboardState = Keyboard.GetState();
 
-            if (ButtonIntersects(ref mouseState))
+            if (ButtonIntersects(ref mouseState, buttonStart) || ButtonIntersects(ref mouseState, buttonExit) || ButtonIntersects(ref mouseState, buttonResume))
                 buttonOutline.Enable(spriteBatch);
             else
                 buttonOutline.Disable(spriteBatch);
@@ -97,21 +99,38 @@ namespace test_menu
             if (buttonExit.BoundingBox.Contains(mouseState.Position))
                 buttonOutline.Position.Y = 270;
             if (buttonResume.BoundingBox.Contains(mouseState.Position))
-                buttonOutline.Position.Y = 370;
+                buttonOutline.Position.Y = 170;
 
             switch(GameState)
             {
                 case STATE_MENU:
+                    if (Clicked(ref mouseState, buttonStart))
+                        GameState = STATE_PLAYING;
+                    if (Clicked(ref mouseState, buttonExit))
+                        Exit();
                     break;
                 case STATE_PLAYING:
+                    buttonStart.Disable(spriteBatch);
+                    buttonExit.Disable(spriteBatch);
+                    buttonResume.Disable(spriteBatch);
+                    if (keyboardState.IsKeyDown(Keys.P) || keyboardState.IsKeyDown(Keys.Escape))
+                        GameState = STATE_PAUSED;
                     break;
                 case STATE_PAUSED:
+                    buttonResume.Enable(spriteBatch);
+                    buttonExit.Enable(spriteBatch);
+                    if (Clicked(ref mouseState, buttonResume))
+                        GameState = STATE_PLAYING;
+                    if (Clicked(ref mouseState, buttonExit))
+                        Exit();
                     break;
                 case STATE_GAMEOVER:
                     break;
                 default:
                     break;
             }
+
+
 
             base.Update(gameTime);
         }
@@ -122,7 +141,7 @@ namespace test_menu
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(new Color(15,15,15));
 
             spriteBatch.Begin();
             buttonStart.Draw(spriteBatch);
@@ -134,14 +153,15 @@ namespace test_menu
             base.Draw(gameTime);
         }
 
-        private bool ButtonIntersects(ref MouseState mouseState)
+        private bool Clicked(ref MouseState mouseState, GameObject button)
         {
-            if (GameState == STATE_MENU)
-            {
-                return buttonStart.BoundingBox.Contains(mouseState.Position) ||
-                   buttonExit.BoundingBox.Contains(mouseState.Position) ||
-                   buttonResume.BoundingBox.Contains(mouseState.Position);
-            }
+            return ButtonIntersects(ref mouseState, button) && (mouseState.LeftButton == ButtonState.Pressed);
+        }
+
+        private bool ButtonIntersects(ref MouseState mouseState, GameObject button)
+        {
+            if (GameState == STATE_MENU || GameState == STATE_PAUSED)
+                return button.BoundingBox.Contains(mouseState.Position);
             return false;
         }
 
